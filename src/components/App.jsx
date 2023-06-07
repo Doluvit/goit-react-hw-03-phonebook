@@ -4,7 +4,6 @@ import { ContactList } from './contactList/contactList';
 import { Filter } from './filter/filter';
 import { FormHeader, MainContainer } from './App.styled';
 
-
 class App extends Component {
   state = {
     contacts: [
@@ -16,6 +15,20 @@ class App extends Component {
     filter: '',
   };
 
+  componentDidMount() {
+    const localContacts = localStorage.getItem('contacts');
+    const parsedContacts = JSON.parse(localContacts);
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
+
+  componentDidUpdate(_, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
+
   handleSubmit = data => {
     this.setState(({ contacts }) =>
       contacts.find(contact => contact.name === data.name)
@@ -26,11 +39,11 @@ class App extends Component {
 
   deleteContact = contactId => {
     this.setState(prev => ({
-  contacts: prev.contacts.filter(contact => contact.id !== contactId)
-}))
-  }
+      contacts: prev.contacts.filter(contact => contact.id !== contactId),
+    }));
+  };
 
-  onFilter = (event) => {
+  onFilter = event => {
     const { value } = event.currentTarget;
     this.setState({ filter: value });
   };
@@ -44,11 +57,14 @@ class App extends Component {
     return (
       <MainContainer>
         <FormHeader>Phonebook</FormHeader>
-        <ContactForm onSubmit={ this.handleSubmit} />
+        <ContactForm onSubmit={this.handleSubmit} />
 
         <FormHeader>Contacts</FormHeader>
         <Filter value={filter} onFilter={this.onFilter} />
-        <ContactList contacts={filteredContacts} deleteContact={this.deleteContact}/>
+        <ContactList
+          contacts={filteredContacts}
+          deleteContact={this.deleteContact}
+        />
       </MainContainer>
     );
   }
